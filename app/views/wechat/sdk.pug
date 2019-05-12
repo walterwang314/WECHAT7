@@ -1,0 +1,116 @@
+extends ../wechat
+block content
+    #container.container(style='padding:15px;text-align:center;')
+        h1 语音识别查电影
+        .weui-btn.weui-btn_primary 点击开始录音
+        h2#title
+        #director
+        #year
+        #poster
+    script.
+        wx.config({
+            debug: false,
+            appId: '#{appId}', 
+            timestamp: '#{timestamp}', 
+            nonceStr: '#{noncestr}', 
+            signature: '#{signature}',
+            jsApiList: [
+                'onMenuShareTimeline',
+                'onMenuShareAppMessage',
+                'startRecord',
+                'stopRecord',
+                'onVoiceRecordEnd',
+                'translateVoice',
+            ] 
+        });
+        wx.ready(function(){
+            wx.checkJsApi({
+                jsApiList: [
+                    'onMenuShareTimeline',
+                    'onMenuShareAppMessage',
+                    'startRecord',
+                    'stopRecord',
+                    'onVoiceRecordEnd',
+                    'translateVoice',                    
+                ],
+                success: function(res) {
+                    console.log(res);
+                }
+            });
+            var shareContent = {
+                title: 'WeChat SDK Test',
+                desc: 'WeChat SDK Test',
+                link: 'http://dev.feihu1996.cn/works/',
+                imgUrl: 'http://www.feihu1996.cn/img/logo.png',
+                success: function () {
+                    window.alert('分享成功~');
+                },
+                cancel: function () {
+                    window.alert('分享失败~');
+                },
+            };
+            var isRecording = false;
+            var doubanSlides;
+            wx.onMenuShareAppMessage(shareContent);
+            $('#poster').on('click', function(){
+                wx.previewImage(doubanSlides);
+            });            
+            $('.weui-btn').on('click', function(){
+                if(!isRecording){
+                    isRecording = true;
+                    $('.weui-btn').html('再点击停止录音解析搜索');
+                    wx.startRecord();
+                    return;
+                }
+                isRecording = false;
+                $('.weui-btn').html('点击开始录音');
+                wx.stopRecord({
+                    success: function(res){
+                        var localId = res.localId;
+                        wx.translateVoice({
+                            localId: localId,
+                            isShowProgressTips: 1,
+                            success: function (res) {
+                                // + res.translateResult
+                                $.ajax({
+                                    type: 'get',
+                                    url: 'https://api.douban.com/v2/movie/search?q=' + '黑客帝国',
+                                    dataType: 'jsonp',
+                                    success: function(data){
+                                        console.log('search success -> data: ', data);
+                                        var subject = data.subjects[0];   
+                                        $('#title').html(subject.title);
+                                        $('#director').html(subject.directors[0].name);
+                                        $('#year').html(subject.year);
+                                        $('#poster').html('<img src="' + subject.images.large + '">');
+                                        shareContent = {
+                                            title: subject.title,
+                                            desc: subject.year + '上映',
+                                            link: 'http://dev.feihu1996.cn/works/',
+                                            imgUrl: subject.images.large,
+                                            success: function () {
+                                                window.alert('分享成功~');
+                                            },
+                                            cancel: function () {
+                                                window.alert('分享失败~');
+                                            },                                            
+                                        };
+                                        doubanSlides = {
+                                            content: subject.images.large,
+                                            urls: [subject.images.large],
+                                        };
+                                        data.subjects.forEach(function(item){
+                                            doubanSlides.urls.push(item.images.large);
+                                        });
+                                        wx.onMenuShareAppMessage(shareContent);
+                                    }
+                                });
+                            }                        
+                        });
+                    },
+                });
+            });
+        });
+        wx.error(function(error){
+            console.log(error);
+        });

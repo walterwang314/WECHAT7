@@ -1,0 +1,1 @@
+./bin/sunny clientid 3bce30e78e6ff96d
