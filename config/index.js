@@ -1,5 +1,5 @@
 module.exports = {
-    port: 3007,
+    port: 3006,
     db: 'mongodb://localhost/wechattest',
     wechat: {
         appID: 'wxfec136e557b710aa',

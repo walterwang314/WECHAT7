@@ -21,6 +21,8 @@ module.exports = (config, reply) => {
         if (ctx.method === "GET") {
             console.log('method get');
             if (sha === signature) {
+                console.log("sha, signature: ", sha, signature);
+                console.log("sha === signature ");
                 ctx.body = echostr;
             } else {
                 ctx.body = 'Failed';

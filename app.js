@@ -72,7 +72,7 @@ const { initSchema, connect } = require('./app/database/init');
     
     app.listen(config.port);
     
-    console.log('listen on 3007');
+    console.log('listen on 3006');
 })();
 
 
